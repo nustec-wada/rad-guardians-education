@@ -1,9 +1,9 @@
 
 
-const BASE = import.meta.env.BASE_URL;
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Shield, Pill, Home, Car, ShowerHead, Lightbulb, RotateCcw, Radiation,  Sparkles, FastForward } from "lucide-react";
+const BASE = import.meta.env.BASE_URL;
 
 function Button({
   children,
@@ -281,7 +281,7 @@ className="h-28 w-28"
 </h2>
  
 <p className="mt-4 text-base leading-8 text-slate-200">
-こんにちは。私のことはハカセって呼んでね。<br>
+こんにちは。私のことはハカセって呼んでね。<br />
 このゲームでは、さまざまな放射性物質からの被ばく防護を学べるよ。積極的に敵を倒すんじゃなくて、相手の特徴や状況を見ながら適切な防護措置を選び、被ばくをできるだけ抑えて全3ラウンドをクリアするのが目的よ。一緒に放射性物質への対応を考えよう！
 </p>
 </div>
