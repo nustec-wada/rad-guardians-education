@@ -34,9 +34,9 @@ function CardContent({ children, className = "" }) {
 }
 
 const ENEMIES=[
- {id:"xe133",round:1,name:"キセノン133",symbol:"Xe-133",epithet:"希ガスの幻影",color:"from-cyan-500 to-blue-700",decay:7,contam:0,hints:["コイツは希ガスといって、汚染が身体や地表面に付着することはないよ。外部被ばくだけ考えればいいのね。","放射線には遮へいが有効よ。行動を見直してみよう。","キセノン133は時間とともに比較的早く減衰する。それまで被ばくを抑えて耐えよう。"]},
- {id:"cs137",round:2,name:"セシウム137",symbol:"Cs-137",epithet:"残留する微粒子",color:"from-amber-500 to-orange-700",decay:100,contam:100,hints:["コイツは半減期が長い。待つだけでは戦況はほとんど変わらないよ。","汚染が起こるまでには時間がある。予兆があったら適切な防護措置で付着を防ぐの。","セシウム137攻略の鍵は除染よ。ただし防護措置も組み合わせよう。"]},
- {id:"i131",round:3,name:"ヨウ素131",symbol:"I-131",epithet:"甲状腺スナイパー",color:"from-violet-500 to-fuchsia-800",decay:5,contam:80,hints:["コイツは減衰は早いけど、その分放射線をたくさん出すのよ。ウカウカしているとあっという間にやられてしまうよ。","放射性ヨウ素による甲状腺内部被ばくには有効な防護措置があるよ。","安定ヨウ素剤と屋内退避を使って、減衰まで耐えよう。"]}
+ {id:"xe133",round:1,name:"キセノン133",symbol:"Xe-133",epithet:"THE SUBMERSION CLOUD",color:"from-cyan-500 to-blue-700",decay:7,contam:0,hints:["キセノン133は希ガスといって、汚染が身体や地表面に付着することはないよ。外部被ばくだけ考えればいいね。","放射線には遮へいが有効よ。行動を見直してみよう。","キセノン133は時間とともに比較的早く減衰する。それまで被ばくを抑えて耐えよう。"]},
+ {id:"cs137",round:2,name:"セシウム137",symbol:"Cs-137",epithet:"THE PERSISTENT AEROSOL",color:"from-amber-500 to-orange-700",decay:100,contam:100,hints:["セシウム137は半減期が長い。待つだけでは戦況はほとんど変わらないよ。","汚染が起こるまでには猶予がある。予兆があったら適切な防護措置で付着を防ごう。","セシウム137攻略の鍵は除染よ。ただし汚染の予兆があれば防護服や屋内退避も忘れずにね。"]},
+ {id:"i131",round:3,name:"ヨウ素131",symbol:"I-131",epithet:"THE THYROID SEEKER",color:"from-violet-500 to-fuchsia-800",decay:5,contam:80,hints:["ヨウ素131は減衰は早いけど、その分放射線をたくさん出すよ。ウカウカしているとあっという間にやられてしまう。","放射性ヨウ素による甲状腺内部被ばくには有効な防護措置があるよ。","安定ヨウ素剤と屋内退避を組み合わせて、減衰まで耐えよう。"]}
 ];
 const ACTIONS=[
  {id:"suit",label:"防護服装備",icon:Shield,tone:"bg-sky-600"},{id:"iodine",label:"安定ヨウ素剤",icon:Pill,tone:"bg-violet-600"},{id:"shelter",label:"屋内退避",icon:Home,tone:"bg-emerald-600"},{id:"evacuate",label:"避難",icon:Car,tone:"bg-orange-600"},{id:"decon",label:"除染",icon:ShowerHead,tone:"bg-cyan-700"},{id:"hint",label:"ハカセの助言",icon:Lightbulb,tone:"bg-amber-400 text-slate-950"}
@@ -134,14 +134,14 @@ useEffect(() => {
  const pause=()=>new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;clearTimeout(timer);skipRef.current=null;resolve()};const timer=setTimeout(finish,5000);skipRef.current=finish});
  const add=(text,kind="normal")=>setLogs(v=>[{text,kind,id:crypto.randomUUID()},...v].slice(0,14));
  const say=(text,mood="normal")=>setHakase({text,mood});
- const playerStatuses=useMemo(()=>[iodineTurns>0&&`ヨウ素防護 残り${iodineTurns}ターン`,surface&&"体表面汚染",intake&&"体内汚染",internal&&"内部被ばく",order&&"📢 避難指示発令中"].filter(Boolean),[iodineTurns,surface,intake,internal,order]);
+ const playerStatuses=useMemo(()=>[iodineTurns>0&&`甲状腺ブロック 残り${iodineTurns}ターン`,surface&&"体表面汚染",intake&&"体内汚染",internal&&"内部被ばく",order&&"📢 避難指示発令中"].filter(Boolean),[iodineTurns,surface,intake,internal,order]);
  const reset=(i=0,keep=false)=>{setRound(i);if(!keep)setHp(100);setTurn(1);setSurface(false);setIntake(false);setInternal(false);setIodineTurns(0);setContam(ENEMIES[i].contam);setPending([]);setOrder(false);setShelterCount(0);setLogs([]);setBusy(false);setResult(null)};
  const enterBattle=(index,keep,message)=>{reset(index,keep);setBattleFade(0);setPhase("battle");say(message);requestAnimationFrame(()=>requestAnimationFrame(()=>setBattleFade(1)))};
  const showEncounter=(index,after)=>{setEncounter(index);setPhase("encounter");window.setTimeout(()=>{setEncounter(null);after()},2200)};
  const beginRound1=()=>{
   prepareBgm(0);
   setDose({external:0,internal:0});setHistory([]);setHints([0,0,0]);setHintCount(0);
-  showEncounter(0,()=>enterBattle(0,false,"コイツはキセノン133よ。どんな放射性物質かを観察しながら減衰まで耐えよう。"));
+  showEncounter(0,()=>enterBattle(0,false,"コイツはキセノン133よ。比較的半減期は短いけど、γ線を出すから気をつけよう。"));
 };
 
 const start = () => { setTutorialStep(0); setPhase("tutorialAsk"); };
@@ -163,7 +163,7 @@ const start = () => { setTutorialStep(0); setPhase("tutorialAsk"); };
    if(blocked){add(`MATCH! ${shelter?"屋内退避":"防護服"}で体表面汚染を防いだ！`,"match");say(`いいよ！ ${shelter?"屋内退避":"防護服"}の効果はこの1ターンだけよ。`,"good")}else{setSurface(true);add("体表面汚染！ CONTAMINATED!","damage");say("体表面が汚染されたよ。早めの除染を考えよう。","warn")}
    await pause();return 0;
   }
-  if(shelter){add("MATCH! 屋内退避で体内への取り込みを防いだ！","match");say("いいよ！ 屋内退避の効果はこの1ターンだけよ。次はどうする？","good")}else{setIntake(true);add("体内汚染！ INTAKE!","damage");say(iodineEffect&&enemy.id==="i131"?"取り込んだけど、安定ヨウ素剤が効いている。甲状腺への影響は低減されるよ。":"次のターンに内部被ばくへ移行する。注意よ。","warn")}
+  if(shelter){add("MATCH! 屋内退避で体内への取り込みを防いだ！","match");say("いいよ！ 屋内退避の効果はこの1ターンだけよ。次はどうする？","good")}else{setIntake(true);add("体内汚染！ INTAKE!","damage");say(iodineEffect&&enemy.id==="i131"?"取り込んだけど、安定ヨウ素剤が効いている。甲状腺への沈着は低減されるよ。":"次のターンに内部被ばくへ移行する。注意よ。","warn")}
   await pause();return 0;
  };
 
@@ -173,7 +173,7 @@ const start = () => { setTutorialStep(0); setPhase("tutorialAsk"); };
   const suitActive=id==="suit",shelter=id==="shelter";let iodineEffect=iodineActive||id==="iodine",clear=null,pendingDamage=0;
   if(intake){setIntake(false);setInternal(true);let d=enemy.id==="i131"?16:9;if(enemy.id==="i131"&&iodineEffect)d=3;add(`体内汚染 → 内部被ばく！ ${d} DAMAGE`,"damage");await pause();await damage(d,"internal");pendingDamage+=d}
   else if(internal){let d=enemy.id==="i131"?(iodineEffect?2:10):6;add(`内部被ばくの継続ダメージ！ ${d} DAMAGE`,"damage");await pause();await damage(d,"internal");pendingDamage+=d}
-  if(surface&&Math.random()<.25){setIntake(true);add("体表面汚染から体内取り込みが発生！","damage");await pause()}
+  if(surface&&Math.random()<.25){setIntake(true);add("体表面汚染から体内侵入が発生！","damage");await pause()}
   if(id==="suit"){add("防護服を装備！ 1 TURN GUARD!","player");say("防護服はこのターンだけ有効よ。体表面への放射性物質の付着を防ぐけど、放射線そのものは防げないよ。","normal")}
   if(id==="iodine"){setIodineTurns(3);iodineEffect=true;add(enemy.id==="i131"?"THYROID GUARD! 3 TURNS":"IODINE GUARD! 3 TURNS",enemy.id==="i131"?"match":"normal");say(enemy.id==="i131"?"安定ヨウ素剤の効果は3ターンよ。放射性ヨウ素による甲状腺内部被ばくを低減するよ。":"安定ヨウ素剤の効果は3ターンよ。ただし、放射性ヨウ素の内部被ばく以外には効果がないよ。",enemy.id==="i131"?"good":"warn")}
   if(id==="shelter"){setShelterCount(v=>v+1);add("屋内へ退避！ 1 TURN SHELTER!","player");say("屋内退避はこのターンだけ有効よ。外部被ばくと放射性物質の取り込みを低減するよ。","normal")}
@@ -208,7 +208,7 @@ const start = () => { setTutorialStep(0); setPhase("tutorialAsk"); };
  const nextRound=()=>{
   if(round<2){
     const n=round+1;
-    const msg=n===1?"次はセシウム137よ。汚染がやっかいな相手よ。":"最後はヨウ素131よ。放射能の減衰は早いけど、その分、強烈な放射線に注意よ！";
+    const msg=n===1?"次はセシウム137よ。半減期が長く、γ線を出すやっかいな相手よ。":"最後はヨウ素131よ。放射能の減衰は早いけど、強烈な放射線に注意して！";
     prepareBgm(n);
     showEncounter(n,()=>enterBattle(n,true,msg));
   }else setPhase("final");
@@ -226,7 +226,7 @@ mood: "good",
 color: "border-emerald-400/40 bg-emerald-500/10",
 titleColor: "text-emerald-300",
 text:
-"放射性物質の特徴や状況を確認しながら、適切な防護措置を選べていたよ。実際の原子力災害でも、状況と行政機関からの指示を確認して、落ち着いて行動しよう！"
+"放射性物質の特徴や状況を確認しながら、適切な防護措置を選べていたよ。実際の原子力災害でも、状況と行政機関からの情報を確認して、落ち着いて行動しよう！"
 };
 }
  
@@ -255,7 +255,7 @@ mood: "warn",
 color: "border-orange-400/40 bg-orange-500/10",
 titleColor: "text-orange-300",
 text:
-"相手の特徴と予兆に合わない行動が多かったかもしれないね。放射線には屋内退避による遮へい、体表面汚染には防護服や除染、放射性物質の取り込みには屋内退避が重要よ。安定ヨウ素剤は万能ではなく、放射性ヨウ素による甲状腺内部被ばくを低減するためのものだって覚えておいてね。"
+"相手の特徴と予兆に合わない行動が多かったかもしれないね。放射線には被ばくを防ぐ「屋内退避」、体表面汚染には「防護服」、放射性物質の取り込みには「屋内退避」が有効よ。「安定ヨウ素剤」は万能じゃなく、放射性ヨウ素による甲状腺内部被ばくを低減するためのものだって覚えておいてね。"
 };
 })();
 
@@ -266,7 +266,7 @@ mood="normal"
 className="h-24 w-24"
 />
 <p className="mt-6 text-sm font-black tracking-[.3em] text-amber-300">HAKASE TUTORIAL</p><h1 className="mt-2 text-3xl font-black sm:text-5xl">チュートリアルを見ますか？</h1><p className="mt-4 text-slate-300">ハカセが6つの行動とゲームの基本を簡単に説明します。</p><div className="mt-8 flex gap-4"><Button onClick={startTutorial} className="h-14 min-w-32 bg-cyan-500 text-lg font-black text-slate-950">YES</Button><Button onClick={beginRound1} className="h-14 min-w-32 bg-slate-700 text-lg font-black">NO</Button></div></div></main>;
- if(phase==="tutorial"){const items=[{icon:Shield,title:"防護服装備",text:"体表面への放射性物質の付着を防ぐ。放射線そのものは防げない。効果は選択した1ターンよ。",color:"bg-sky-600"},{icon:Pill,title:"安定ヨウ素剤",text:"放射性ヨウ素による甲状腺内部被ばくを低減する。それ以外の攻撃には効かないよ。ゲーム上の効果は3ターンよ。",color:"bg-violet-600"},{icon:Home,title:"屋内退避",text:"外部被ばくを低減し、放射性物質の付着や取り込みを防ぐ。ゲーム上の効果は選択した1ターンよ。",color:"bg-emerald-600"},{icon:Car,title:"避難",text:"成功すれば即勝利よ。ただし無計画な避難は失敗することがある。避難指示が出ていれば確実に成功するから、屋内退避をしながら指示発令を待つのが合理的ね。",color:"bg-orange-600"},{icon:ShowerHead,title:"除染",text:"体表面に付着した放射性物質を取り除く。相手によっては攻略そのものにも有効よ。",color:"bg-cyan-700"},{icon:Lightbulb,title:"ハカセの助言",text:"困ったらいつでも聞いてね。ターンを消費せず、相手の特徴や攻略のヒントを教えるよ。",color:"bg-amber-400 text-slate-950"}];if(tutorialStep===-1)return <main className="fixed inset-0 z-50 h-[100dvh] overflow-hidden bg-slate-950 p-4 text-white"><div className="mx-auto flex h-full max-w-4xl flex-col items-center justify-center"><p className="text-xs font-black tracking-[.3em] text-cyan-300">TUTORIAL 0 / 6</p><Card className="mt-4 w-full border-white/10 bg-slate-900 text-white"><CardContent className="p-6 sm:p-10">
+ if(phase==="tutorial"){const items=[{icon:Shield,title:"防護服装備",text:"体表面への放射性物質の付着を防ぐことができる。ただし放射線そのものは防げない。効果は選択した1ターンよ。",color:"bg-sky-600"},{icon:Pill,title:"安定ヨウ素剤",text:"放射性ヨウ素による甲状腺内部被ばくを低減する。それ以外の被ばくには効かないよ。ゲーム上の効果は3ターンよ。",color:"bg-violet-600"},{icon:Home,title:"屋内退避",text:"外部被ばくを低減し、放射性物質の付着や取り込みも防ぐ。ゲーム上の効果は選択した1ターンよ。",color:"bg-emerald-600"},{icon:Car,title:"避難",text:"成功すれば即勝利よ。ただし失敗した場合、かえって被ばくしちゃうよ。避難指示が出ていれば確実に成功するから、屋内退避をしながら指示発令を待つのが合理的ね。",color:"bg-orange-600"},{icon:ShowerHead,title:"除染",text:"放射性物質を積極的に取り除く。体表面汚染を除去したいときに使おう。さらに相手によっては放射能を減らせるかもね。ただし、体内汚染は除去できないから予防が大事だよ。",color:"bg-cyan-700"},{icon:Lightbulb,title:"ハカセの助言",text:"困ったらいつでも聞いてね。ターンを消費せず、相手の特徴や攻略のヒントを教えるよ。",color:"bg-amber-400 text-slate-950"}];if(tutorialStep===-1)return <main className="fixed inset-0 z-50 h-[100dvh] overflow-hidden bg-slate-950 p-4 text-white"><div className="mx-auto flex h-full max-w-4xl flex-col items-center justify-center"><p className="text-xs font-black tracking-[.3em] text-cyan-300">TUTORIAL 0 / 6</p><Card className="mt-4 w-full border-white/10 bg-slate-900 text-white"><CardContent className="p-6 sm:p-10">
 
 <div className="flex flex-col items-center gap-6 sm:flex-row">
  
@@ -281,7 +281,8 @@ className="h-28 w-28"
 </h2>
  
 <p className="mt-4 text-base leading-8 text-slate-200">
-ハカセ「このゲームでは、キセノン133、セシウム137、ヨウ素131という特徴の異なる放射性物質からの被ばく防護を考えるよ。積極的に敵を倒すんじゃなくて、相手の特徴や状況の予兆を見ながら適切な防護措置を選び、被ばくをできるだけ抑えて全3ラウンドをクリアするのが目的よ。相手に応じた攻略方法を考えよう！」
+こんにちは。私のことはハカセって呼んでね。<br>
+このゲームでは、さまざまな放射性物質からの被ばく防護を学べるよ。積極的に敵を倒すんじゃなくて、相手の特徴や状況を見ながら適切な防護措置を選び、被ばくをできるだけ抑えて全3ラウンドをクリアするのが目的よ。一緒に放射性物質への対応を考えよう！
 </p>
 </div>
  
