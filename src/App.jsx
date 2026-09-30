@@ -91,7 +91,7 @@ imageRendering: "auto"
 export default function App(){
  const [phase,setPhase]=useState("title"),[round,setRound]=useState(0),[hp,setHp]=useState(100),[turn,setTurn]=useState(1);
  const [tutorialStep,setTutorialStep]=useState(0),[encounter,setEncounter]=useState(null),[battleFade,setBattleFade]=useState(0);
- const [surface,setSurface]=useState(false),[intake,setIntake]=useState(false),[internal,setInternal]=useState(false),[iodineTurns,setIodineTurns]=useState(0),[contam,setContam]=useState(0),[pending,setPending]=useState([]),[order,setOrder]=useState(false),[logs,setLogs]=useState([]),[busy,setBusy]=useState(false),[result,setResult]=useState(null);
+ const [surface,setSurface]=useState(false),[intake,setIntake]=useState(false),[internal,setInternal]=useState(false),[iodineTurns,setIodineTurns]=useState(0),[contam,setContam]=useState(0),[pending,setPending]=useState([]),[order,setOrder]=useState(false),[shelterCount,setShelterCount]=useState(0),[logs,setLogs]=useState([]),[busy,setBusy]=useState(false),[result,setResult]=useState(null);
  const [hakase,setHakase]=useState({text:"困ったら、わたしの助言を聞いてね。",mood:"normal"}),[hints,setHints]=useState([0,0,0]),[hintCount,setHintCount]=useState(0);
 
 const [dose,setDose]=useState({external:0,internal:0}),
@@ -135,7 +135,7 @@ useEffect(() => {
  const add=(text,kind="normal")=>setLogs(v=>[{text,kind,id:crypto.randomUUID()},...v].slice(0,14));
  const say=(text,mood="normal")=>setHakase({text,mood});
  const playerStatuses=useMemo(()=>[iodineTurns>0&&`ヨウ素防護 残り${iodineTurns}ターン`,surface&&"体表面汚染",intake&&"体内汚染",internal&&"内部被ばく",order&&"📢 避難指示発令中"].filter(Boolean),[iodineTurns,surface,intake,internal,order]);
- const reset=(i=0,keep=false)=>{setRound(i);if(!keep)setHp(100);setTurn(1);setSurface(false);setIntake(false);setInternal(false);setIodineTurns(0);setContam(ENEMIES[i].contam);setPending([]);setOrder(false);setLogs([]);setBusy(false);setResult(null)};
+ const reset=(i=0,keep=false)=>{setRound(i);if(!keep)setHp(100);setTurn(1);setSurface(false);setIntake(false);setInternal(false);setIodineTurns(0);setContam(ENEMIES[i].contam);setPending([]);setOrder(false);setShelterCount(0);setLogs([]);setBusy(false);setResult(null)};
  const enterBattle=(index,keep,message)=>{reset(index,keep);setBattleFade(0);setPhase("battle");say(message);requestAnimationFrame(()=>requestAnimationFrame(()=>setBattleFade(1)))};
  const showEncounter=(index,after)=>{setEncounter(index);setPhase("encounter");window.setTimeout(()=>{setEncounter(null);after()},2200)};
  const beginRound1=()=>{
@@ -176,7 +176,7 @@ const start = () => { setTutorialStep(0); setPhase("tutorialAsk"); };
   if(surface&&Math.random()<.25){setIntake(true);add("体表面汚染から体内取り込みが発生！","damage");await pause()}
   if(id==="suit"){add("防護服を装備！ 1 TURN GUARD!","player");say("防護服はこのターンだけ有効よ。体表面への放射性物質の付着を防ぐけど、放射線そのものは防げないよ。","normal")}
   if(id==="iodine"){setIodineTurns(3);iodineEffect=true;add(enemy.id==="i131"?"THYROID GUARD! 3 TURNS":"IODINE GUARD! 3 TURNS",enemy.id==="i131"?"match":"normal");say(enemy.id==="i131"?"安定ヨウ素剤の効果は3ターンよ。放射性ヨウ素による甲状腺内部被ばくを低減するよ。":"安定ヨウ素剤の効果は3ターンよ。ただし、放射性ヨウ素の内部被ばく以外には効果がないよ。",enemy.id==="i131"?"good":"warn")}
-  if(id==="shelter"){add("屋内へ退避！ 1 TURN SHELTER!","player");say("屋内退避はこのターンだけ有効よ。外部被ばくと放射性物質の取り込みを低減するよ。","normal")}
+  if(id==="shelter"){setShelterCount(v=>v+1);add("屋内へ退避！ 1 TURN SHELTER!","player");say("屋内退避はこのターンだけ有効よ。外部被ばくと放射性物質の取り込みを低減するよ。","normal")}
   if(id==="decon"){
    if(enemy.id==="xe133"){add("NO EFFECT! 除染は効かない！","damage");say("キセノン133は希ガスよ。除染では攻略できないよ。","warn")}
    else{if(surface){setSurface(false);add("体表面汚染を除去！","match")};const power=enemy.id==="cs137"?38:12,next=Math.max(0,contam-power);setContam(next);add(`放射能ゲージ ${contam} → ${next} (-${power})`,"match");if(enemy.id==="cs137"&&next===0)clear="DECONTAMINATION"}
@@ -200,7 +200,7 @@ const start = () => { setTutorialStep(0); setPhase("tutorialAsk"); };
   else add(`時間経過 ▶ 放射能ゲージ ${contam}（長半減期のため自然減衰なし）`,"decay");
   if(iodineTurns>0&&id!=="iodine")setIodineTurns(v=>Math.max(0,v-1));
   await pause();
-  const newOrder=Math.random()<.12;setOrder(newOrder);if(newOrder){add("📢 避難指示が発令された！","order");say("避難指示よ！ 今なら避難は確実に成功するよ。","good");await pause()}
+  const effectiveShelterCount=shelterCount+(id==="shelter"?1:0);const orderChance=Math.min(.12+effectiveShelterCount*.10,.60);const newOrder=Math.random()<orderChance;setOrder(newOrder);if(newOrder){add("📢 避難指示が発令された！","order");say("避難指示よ！ 今なら避難は確実に成功するよ。","good");await pause()}
   if(hp-pendingDamage<=0)setResult({type:"gameover",title:"GAME OVER",text:"防護力が尽きた……。状況によって防護措置を見直そう。"});
   else if(enemy.id!=="cs137"&&next>enemy.decay){setHistory(v=>[...v,"DECAY"]);setResult({type:"clear",title:"DECAY CLEAR!",text:`${enemy.name}は減衰し、力を失った！`})}
   setBusy(false);
@@ -266,7 +266,7 @@ mood="normal"
 className="h-24 w-24"
 />
 <p className="mt-6 text-sm font-black tracking-[.3em] text-amber-300">HAKASE TUTORIAL</p><h1 className="mt-2 text-3xl font-black sm:text-5xl">チュートリアルを見ますか？</h1><p className="mt-4 text-slate-300">ハカセが6つの行動とゲームの基本を簡単に説明します。</p><div className="mt-8 flex gap-4"><Button onClick={startTutorial} className="h-14 min-w-32 bg-cyan-500 text-lg font-black text-slate-950">YES</Button><Button onClick={beginRound1} className="h-14 min-w-32 bg-slate-700 text-lg font-black">NO</Button></div></div></main>;
- if(phase==="tutorial"){const items=[{icon:Shield,title:"防護服装備",text:"体表面への放射性物質の付着を防ぐ。放射線そのものは防げない。効果は選択した1ターンよ。",color:"bg-sky-600"},{icon:Pill,title:"安定ヨウ素剤",text:"放射性ヨウ素による甲状腺内部被ばくを低減する。それ以外の攻撃には効かないよ。ゲーム上の効果は3ターンよ。",color:"bg-violet-600"},{icon:Home,title:"屋内退避",text:"外部被ばくを低減し、放射性物質の付着や取り込みを防ぐ。ゲーム上の効果は選択した1ターンよ。",color:"bg-emerald-600"},{icon:Car,title:"避難",text:"成功すれば即勝利よ。ただし無計画な避難は失敗することがある。避難指示が出ていれば確実に成功するよ。",color:"bg-orange-600"},{icon:ShowerHead,title:"除染",text:"体表面に付着した放射性物質を取り除く。相手によっては攻略そのものにも有効よ。",color:"bg-cyan-700"},{icon:Lightbulb,title:"ハカセの助言",text:"困ったらいつでも聞いてね。ターンを消費せず、相手の特徴や攻略のヒントを教えるよ。",color:"bg-amber-400 text-slate-950"}];if(tutorialStep===-1)return <main className="fixed inset-0 z-50 h-[100dvh] overflow-hidden bg-slate-950 p-4 text-white"><div className="mx-auto flex h-full max-w-4xl flex-col items-center justify-center"><p className="text-xs font-black tracking-[.3em] text-cyan-300">TUTORIAL 0 / 6</p><Card className="mt-4 w-full border-white/10 bg-slate-900 text-white"><CardContent className="p-6 sm:p-10">
+ if(phase==="tutorial"){const items=[{icon:Shield,title:"防護服装備",text:"体表面への放射性物質の付着を防ぐ。放射線そのものは防げない。効果は選択した1ターンよ。",color:"bg-sky-600"},{icon:Pill,title:"安定ヨウ素剤",text:"放射性ヨウ素による甲状腺内部被ばくを低減する。それ以外の攻撃には効かないよ。ゲーム上の効果は3ターンよ。",color:"bg-violet-600"},{icon:Home,title:"屋内退避",text:"外部被ばくを低減し、放射性物質の付着や取り込みを防ぐ。ゲーム上の効果は選択した1ターンよ。",color:"bg-emerald-600"},{icon:Car,title:"避難",text:"成功すれば即勝利よ。ただし無計画な避難は失敗することがある。避難指示が出ていれば確実に成功するから、屋内退避をしながら指示発令を待つのが合理的ね。",color:"bg-orange-600"},{icon:ShowerHead,title:"除染",text:"体表面に付着した放射性物質を取り除く。相手によっては攻略そのものにも有効よ。",color:"bg-cyan-700"},{icon:Lightbulb,title:"ハカセの助言",text:"困ったらいつでも聞いてね。ターンを消費せず、相手の特徴や攻略のヒントを教えるよ。",color:"bg-amber-400 text-slate-950"}];if(tutorialStep===-1)return <main className="fixed inset-0 z-50 h-[100dvh] overflow-hidden bg-slate-950 p-4 text-white"><div className="mx-auto flex h-full max-w-4xl flex-col items-center justify-center"><p className="text-xs font-black tracking-[.3em] text-cyan-300">TUTORIAL 0 / 6</p><Card className="mt-4 w-full border-white/10 bg-slate-900 text-white"><CardContent className="p-6 sm:p-10">
 
 <div className="flex flex-col items-center gap-6 sm:flex-row">
  
@@ -281,7 +281,7 @@ className="h-28 w-28"
 </h2>
  
 <p className="mt-4 text-base leading-8 text-slate-200">
-ハカセ「このゲームでは、キセノン133、セシウム137、ヨウ素131という特徴の異なる放射性物質からの被ばく防護を考えるよ。相手の特徴や状況の予兆を見ながら適切な防護措置を選び、被ばくをできるだけ抑えて全3ラウンドをクリアするのが目的よ。放射能の減衰、除染、避難など、相手に応じた攻略方法を考えよう！」
+ハカセ「このゲームでは、キセノン133、セシウム137、ヨウ素131という特徴の異なる放射性物質からの被ばく防護を考えるよ。積極的に敵を倒すんじゃなくて、相手の特徴や状況の予兆を見ながら適切な防護措置を選び、被ばくをできるだけ抑えて全3ラウンドをクリアするのが目的よ。相手に応じた攻略方法を考えよう！」
 </p>
 </div>
  
@@ -291,7 +291,7 @@ className="h-28 w-28"
 
 <div className={`grid h-28 w-28 shrink-0 place-items-center rounded-3xl ${item.color}`}><Icon className="h-14 w-14"/></div>
 
-<div className="text-center sm:text-left"><h2 className="text-3xl font-black">{item.title}</h2><p className="mt-4 text-base leading-8 text-slate-200">👨‍🔬 ハカセ「{item.text}」</p></div></div></CardContent></Card><div className="mt-6 flex w-full max-w-xl items-center justify-between gap-3"><Button onClick={()=>setTutorialStep(v=>v===0?-1:v-1)} className="bg-slate-700">戻る</Button><div className="flex gap-1">{items.map((_,i)=><span key={i} className={`h-2 w-6 rounded-full ${i===tutorialStep?"bg-cyan-300":"bg-slate-700"}`}/>)}</div>{tutorialStep<items.length-1?<Button onClick={()=>setTutorialStep(v=>v+1)} className="bg-cyan-500 font-black text-slate-950">次へ</Button>:<Button onClick={beginRound1} className="bg-amber-400 font-black text-slate-950">ROUND 1へ</Button>}</div><Button onClick={beginRound1} variant="ghost" className="mt-4 text-slate-400">チュートリアルをスキップ</Button></div></main>}
+<div className="text-center sm:text-left"><h2 className="text-3xl font-black">{item.title}</h2><p className="mt-4 text-base leading-8 text-slate-200">ハカセ「{item.text}」</p></div></div></CardContent></Card><div className="mt-6 flex w-full max-w-xl items-center justify-between gap-3"><Button onClick={()=>setTutorialStep(v=>v===0?-1:v-1)} className="bg-slate-700">戻る</Button><div className="flex gap-1">{items.map((_,i)=><span key={i} className={`h-2 w-6 rounded-full ${i===tutorialStep?"bg-cyan-300":"bg-slate-700"}`}/>)}</div>{tutorialStep<items.length-1?<Button onClick={()=>setTutorialStep(v=>v+1)} className="bg-cyan-500 font-black text-slate-950">次へ</Button>:<Button onClick={beginRound1} className="bg-amber-400 font-black text-slate-950">ROUND 1へ</Button>}</div><Button onClick={beginRound1} variant="ghost" className="mt-4 text-slate-400">チュートリアルをスキップ</Button></div></main>}
  if(phase==="title")return <main className="relative min-h-screen bg-slate-950 text-white"><div className="absolute right-4 top-4 z-20 rounded-md bg-slate-950/90 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-slate-300 ring-1 ring-white/10 sm:text-xs">© NUCLEAR SAFETY TECHNOLOGY CENTER</div><div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 pb-24 text-center"><Radiation className="h-20 w-20 text-cyan-300"/><p className="mt-5 font-black tracking-[.35em] text-cyan-300">PROTECTION BATTLE RPG</p><h1 className="text-5xl font-black md:text-7xl">RAD GUARDIANS</h1><p className="mt-3 text-xl font-bold text-slate-300">放射線教育ゲーム</p><Card className="mt-8 max-w-2xl border-white/10 bg-slate-900 text-slate-200"><CardContent className="p-6 text-left leading-7">放射性物質の特徴をとらえ、防護措置を選択せよ。</CardContent></Card><Button onClick={start} className="mt-8 h-14 bg-cyan-500 px-12 text-lg font-black text-slate-950">BATTLE START</Button></div><div className="absolute inset-x-0 bottom-5 px-5 text-center text-[10px] leading-5 text-slate-500 sm:text-xs"><p>本ゲームは放射線防護の基礎知識を学ぶための教育用コンテンツです。</p><p>ゲームの性格上、放射性物質の動態や防護措置の効果を正確に反映していない場合があることをご了承ください。</p></div></main>;
 
 if (phase === "final") {
