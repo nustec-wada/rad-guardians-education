@@ -114,7 +114,7 @@ const prepareBgm = (index) => {
   stopBgm();
   const audio = new Audio(AUDIO.bgm[index]);
   audio.loop = true;
-  audio.volume = soundOn ? 0.35 : 0;
+  audio.volume = soundOn ? 0.55 : 0;
   audio.preload = "auto";
   bgmRef.current = audio;
   const promise = audio.play();
@@ -124,7 +124,7 @@ const prepareBgm = (index) => {
 useEffect(() => {
   const audio = bgmRef.current;
   if (!audio) return;
-  audio.volume = soundOn ? 0.35 : 0;
+  audio.volume = soundOn ? 0.55 : 0;
   if (phase !== "encounter" && phase !== "battle") stopBgm();
 }, [phase, soundOn]);
 
